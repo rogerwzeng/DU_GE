@@ -24,7 +24,8 @@ from typing import Dict, List, Tuple, Optional
 from dataclasses import asdict
 
 # Add src to path
-sys.path.insert(0, '/home/roger/DissipativeUrbanism/src')
+HOME = Path.home()
+sys.path.insert(0, str(HOME / 'DissipativeUrbanism/src'))
 
 from geometry.demographic_manifold import DemographicManifold
 from geometry.geodesic_validation import GeodesicValidator, GeodesicTestResult
@@ -32,8 +33,9 @@ from geometry.fisher_metric import FisherMetric
 
 
 # Paths
-DATA_DIR = Path('/home/roger/DissipativeUrbanism/results/data')
-OUTPUT_DIR = Path('/home/roger/DissipativeUrbanism/results/geodesic_solver_full')
+BASE_DIR = HOME / 'DissipativeUrbanism'
+DATA_DIR = BASE_DIR / 'results/data'
+OUTPUT_DIR = BASE_DIR / 'results/geodesic_solver_full'
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 
@@ -237,7 +239,7 @@ def run_geodesic_analysis(df: pd.DataFrame, n_permutations: int = 100) -> pd.Dat
 
 def load_fisher_rao_results() -> pd.DataFrame:
     """Load Fisher-Rao approximation results for comparison."""
-    fisher_file = Path('/home/roger/DissipativeUrbanism/results/analysis_real/msa_metrics_all_386.csv')
+    fisher_file = BASE_DIR / 'results/analysis_real/msa_metrics_all_386.csv'
     if not fisher_file.exists():
         print(f"Warning: Fisher-Rao results not found at {fisher_file}")
         return None

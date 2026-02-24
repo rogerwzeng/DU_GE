@@ -2,7 +2,7 @@
 """
 Generate publication-quality figures using the FULL GEODESIC SOLVER data.
 
-Data source: /home/roger/DissipativeUrbanism/results/geodesic_solver_full/
+Data source: ~/DissipativeUrbanism/geodesic_efficiency/results
 """
 
 import pandas as pd
@@ -10,8 +10,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib.patches import Rectangle
+from pathlib import Path
 import warnings
 warnings.filterwarnings('ignore')
+
+# Get home directory for generic paths
+HOME = Path.home()
+BASE_DIR = HOME / 'DissipativeUrbanism'
 
 # Set professional publication style
 plt.style.use('seaborn-v0_8-whitegrid')
@@ -24,12 +29,12 @@ plt.rcParams['legend.fontsize'] = 9
 plt.rcParams['figure.dpi'] = 300
 
 # File paths
-GEODESIC_FILE = '/home/roger/DissipativeUrbanism/results/geodesic_solver_full/msa_geodesic_efficiency_full_solver.csv'
-ENTROPY_FILE = '/home/roger/DissipativeUrbanism/results/thermodynamics/official_msa_entropy_production.csv'
-CLASSIFICATION_FILE = '/home/roger/DissipativeUrbanism/results/thermodynamics/official_msa_classification.csv'
-COVID_FILE = '/home/roger/DissipativeUrbanism/results/thermodynamics/official_msa_covid_impact.csv'
-LYAPUNOV_FILE = '/home/roger/DissipativeUrbanism/results/thermodynamics/official_msa_lyapunov_analysis.csv'
-OUTPUT_DIR = '/home/roger/DissipativeUrbanism/results/figures_final/'
+GEODESIC_FILE = BASE_DIR / 'geodesic_efficiency/results/msa_geodesic_efficiency_full_solver.csv'
+ENTROPY_FILE = BASE_DIR / 'results/thermodynamics/official_msa_entropy_production.csv'
+CLASSIFICATION_FILE = BASE_DIR / 'results/thermodynamics/official_msa_classification.csv'
+COVID_FILE = BASE_DIR / 'results/thermodynamics/official_msa_covid_impact.csv'
+LYAPUNOV_FILE = BASE_DIR / 'results/thermodynamics/official_msa_lyapunov_analysis.csv'
+OUTPUT_DIR = BASE_DIR / 'geodesic_efficiency/figures'
 
 def load_data():
     """Load all required datasets."""
@@ -160,7 +165,7 @@ def generate_figure_2(mean_entropy, output_dir):
     ax.set_ylabel('Number of MSAs', fontsize=12)
     ax.set_title('Figure 2: Distribution of Entropy Production (σ)\nAcross 386 U.S. Metropolitan Statistical Areas', 
                  fontsize=13, fontweight='bold')
-    ax.legend(loc='upper right')
+    ax.legend(loc='upper left')
     
     # Add statistics text
     stats_text = f'N = {len(mean_entropy)} MSAs\n'
@@ -173,107 +178,174 @@ def generate_figure_2(mean_entropy, output_dir):
             bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
     
     plt.tight_layout()
-    plt.savefig(f'{output_dir}/figure_2_entropy_production.pdf', dpi=300, bbox_inches='tight')
-    plt.savefig(f'{output_dir}/figure_2_entropy_production.png', dpi=300, bbox_inches='tight')
+    plt.savefig(f'{output_dir}/Distribution_of_entropy_production.pdf', dpi=300, bbox_inches='tight')
+    plt.savefig(f'{output_dir}/Distribution_of_entropy_production.png', dpi=300, bbox_inches='tight')
     plt.close()
-    print(f"Figure 2 saved to {output_dir}/figure_2_entropy_production.pdf")
+    print(f"Distribution of entropy production saved to {output_dir}/Distribution_of_entropy_production.pdf")
 
 # ============================================================================
-# FIGURE 3: σ vs η Quadrant Plot
+# FIGURE 3A: Conceptual Thermodynamic Quadrant Framework (NO DATA)
 # ============================================================================
-def generate_figure_3(merged_df, mean_entropy, geo_df, output_dir):
-    """Generate Figure 3: σ vs η scatter plot with quadrant classification."""
+def generate_figure_3a_conceptual(output_dir):
+    """Generate Figure 3A: Conceptual thermodynamic quadrant framework."""
+    fig, ax = plt.subplots(figsize=(10, 8))
+    
+    # Set equal axis limits for conceptual diagram
+    ax.set_xlim(0, 100)
+    ax.set_ylim(0, 100)
+    
+    # Add quadrant lines at center
+    ax.axhline(50, color='black', linestyle='-', linewidth=2)
+    ax.axvline(50, color='black', linestyle='-', linewidth=2)
+    
+    # Fill quadrants with light colors
+    ax.fill_between([0, 50], 50, 100, alpha=0.12, color='#4169E1')   # II - Blue
+    ax.fill_between([50, 100], 50, 100, alpha=0.12, color='#2E8B57')  # I - Green
+    ax.fill_between([0, 50], 0, 50, alpha=0.12, color='#666666')      # IV - Gray
+    ax.fill_between([50, 100], 0, 50, alpha=0.12, color='#FF8C00')    # III - Orange
+    
+    # Add Roman numeral quadrant labels (large, centered in each quadrant)
+    # Quadrant I (Upper Right): Dissipative Structures
+    ax.text(75, 75, 'I', fontsize=80, fontweight='bold', 
+            ha='center', va='center', color='#2E8B57', alpha=0.25)
+    ax.text(75, 72, 'CONFIRMED\nDISSIPATIVE', fontsize=14, 
+            ha='center', va='center', color='#2E8B57', fontweight='bold')
+    ax.text(75, 62, 'High Entropy Production\nHigh Geodesic Efficiency', fontsize=10, 
+            ha='center', va='center', color='#1a5c3a', style='italic')
+    
+    # Quadrant II (Upper Left): Stable Coherent
+    ax.text(25, 75, 'II', fontsize=80, fontweight='bold',
+            ha='center', va='center', color='#4169E1', alpha=0.25)
+    ax.text(25, 72, 'STABLE\nCOHERENT', fontsize=14,
+            ha='center', va='center', color='#4169E1', fontweight='bold')
+    ax.text(25, 62, 'Low Entropy Production\nHigh Geodesic Efficiency', fontsize=10,
+            ha='center', va='center', color='#2c4a8c', style='italic')
+    
+    # Quadrant III (Lower Right): Externally Forced
+    ax.text(75, 25, 'III', fontsize=80, fontweight='bold',
+            ha='center', va='center', color='#FF8C00', alpha=0.25)
+    ax.text(75, 28, 'EXTERNALLY\nFORCED', fontsize=14,
+            ha='center', va='center', color='#CC7000', fontweight='bold')
+    ax.text(75, 18, 'High Entropy Production\nLow Geodesic Efficiency', fontsize=10,
+            ha='center', va='center', color='#995200', style='italic')
+    
+    # Quadrant IV (Lower Left): Stagnant
+    ax.text(25, 25, 'IV', fontsize=80, fontweight='bold',
+            ha='center', va='center', color='#666666', alpha=0.25)
+    ax.text(25, 28, 'STAGNANT\nREGIONS', fontsize=14,
+            ha='center', va='center', color='#444444', fontweight='bold')
+    ax.text(25, 18, 'Low Entropy Production\nLow Geodesic Efficiency', fontsize=10,
+            ha='center', va='center', color='#333333', style='italic')
+    
+    # Add axis labels with arrows
+    ax.set_xlabel(r'Entropy Production ($\sigma$) $\rightarrow$', fontsize=14, fontweight='bold', labelpad=10)
+    ax.set_ylabel(r'Geodesic Efficiency ($\eta$) $\rightarrow$', fontsize=14, fontweight='bold', labelpad=10)
+    
+    # Add title
+    ax.set_title('Thermodynamic Quadrant Framework\n(Geodesic Efficiency vs. Entropy Production)', 
+                 fontsize=15, fontweight='bold', pad=20)
+    
+    # Remove ticks for clean conceptual look
+    ax.set_xticks([])
+    ax.set_yticks([])
+    
+    # Add threshold labels
+    ax.text(50, -3, 'Threshold', ha='center', va='top', fontsize=10, style='italic', fontweight='bold')
+    ax.text(-3, 50, 'Threshold', ha='right', va='center', fontsize=10, style='italic', fontweight='bold', rotation=90)
+    
+    # Add box around the plot
+    for spine in ax.spines.values():
+        spine.set_linewidth(2)
+        spine.set_color('black')
+    
+    plt.tight_layout()
+    plt.savefig(f'{output_dir}/figure_3a_conceptual_quadrant.pdf', dpi=300, bbox_inches='tight')
+    plt.savefig(f'{output_dir}/figure_3a_conceptual_quadrant.png', dpi=300, bbox_inches='tight')
+    plt.close()
+    print(f"Figure 3A (Conceptual Quadrant Framework) saved to {output_dir}/figure_3a_conceptual_quadrant.pdf")
+
+# ============================================================================
+# FIGURE 3B: σ vs η Quadrant Plot (WITH DATA)
+# ============================================================================
+def generate_figure_3b_data(merged_df, mean_entropy, geo_df, output_dir):
+    """Generate Figure 3B: σ vs η quadrant framework with actual data (I, II, III, IV)."""
     fig, ax = plt.subplots(figsize=(10, 8))
     
     sigma_threshold = 30
     eta_threshold = 0.7
     
-    # Use is_geodesic from the original data (based on p < 0.05)
-    # This gives us the 88.6% geodesic classification
-    geo_dict = dict(zip(geo_df['msa_code'], geo_df['is_geodesic']))
-    merged_df['is_geodesic'] = merged_df['msa_code'].map(geo_dict)
+    # Calculate quadrant counts
+    total = len(merged_df)
+    q1 = ((merged_df['mean_entropy_production'] >= sigma_threshold) & 
+          (merged_df['geodesic_efficiency'] >= eta_threshold)).sum()  # High σ, High η
+    q2 = ((merged_df['mean_entropy_production'] < sigma_threshold) & 
+          (merged_df['geodesic_efficiency'] >= eta_threshold)).sum()   # Low σ, High η
+    q3 = ((merged_df['mean_entropy_production'] >= sigma_threshold) & 
+          (merged_df['geodesic_efficiency'] < eta_threshold)).sum()    # High σ, Low η
+    q4 = ((merged_df['mean_entropy_production'] < sigma_threshold) & 
+          (merged_df['geodesic_efficiency'] < eta_threshold)).sum()     # Low σ, Low η
     
-    # Create classification based on actual geodesic test (p < 0.05) AND quadrants
-    def classify_actual(row):
-        is_geo = row.get('is_geodesic', False)
-        high_sigma = row['mean_entropy_production'] >= sigma_threshold
-        high_eta = row['geodesic_efficiency'] >= eta_threshold
-        
-        if is_geo and high_eta:
-            return 'Geodesic (p<0.05, High η)'
-        elif not is_geo and high_eta:
-            return 'Efficient (Non-geodesic, High η)'
-        elif is_geo and not high_eta:
-            return 'Dissipative (p<0.05, Low η)'
-        else:
-            return 'Subcritical (Non-geodesic, Low η)'
-    
-    merged_df['classification_geo'] = merged_df.apply(classify_actual, axis=1)
-    
-    # Define colors for each classification
-    colors = {
-        'Geodesic (p<0.05, High η)': '#2E8B57',      # Green
-        'Dissipative (p<0.05, Low η)': '#FF8C00',    # Orange
-        'Efficient (Non-geodesic, High η)': '#4169E1',  # Blue
-        'Subcritical (Non-geodesic, Low η)': '#808080'    # Gray
-    }
-    
-    # Plot each classification
-    for classification, color in colors.items():
-        subset = merged_df[merged_df['classification_geo'] == classification]
-        if len(subset) > 0:
-            ax.scatter(subset['mean_entropy_production'], subset['geodesic_efficiency'],
-                      c=color, label=classification, alpha=0.7, s=60, edgecolors='white', linewidth=0.5)
+    # Plot all MSAs as small gray dots
+    ax.scatter(merged_df['mean_entropy_production'], merged_df['geodesic_efficiency'],
+              c='lightgray', alpha=0.5, s=20, edgecolors='none')
     
     # Add quadrant lines
-    ax.axhline(eta_threshold, color='black', linestyle='--', linewidth=1.5, alpha=0.7)
-    ax.axvline(sigma_threshold, color='black', linestyle='--', linewidth=1.5, alpha=0.7)
+    ax.axhline(eta_threshold, color='black', linestyle='-', linewidth=2)
+    ax.axvline(sigma_threshold, color='black', linestyle='-', linewidth=2)
     
-    # Calculate percentages for each quadrant
-    total = len(merged_df)
-    geodesic_geo = (merged_df['is_geodesic'] == True).sum()
-    geodesic_pct = geodesic_geo / total * 100
-    upper_right = ((merged_df['mean_entropy_production'] >= sigma_threshold) & 
-                   (merged_df['geodesic_efficiency'] >= eta_threshold)).sum()
+    # Add Roman numeral quadrant labels with descriptions
+    ax.text(0.75, 0.85, 'I', fontsize=48, fontweight='bold', 
+            ha='center', va='center', transform=ax.transAxes,
+            color='#2E8B57', alpha=0.3)
+    ax.text(0.75, 0.85, f'\n\n{q1} MSAs ({q1/total*100:.1f}%)\nConfirmed\nDissipative', 
+            fontsize=11, ha='center', va='center', transform=ax.transAxes,
+            color='#2E8B57', fontweight='bold')
     
-    # Add quadrant labels
-    ax.text(0.98, 0.98, f'GEODESIC\n(p<0.05): {geodesic_pct:.1f}%', ha='right', va='top', 
-            fontsize=11, fontweight='bold', color='#2E8B57', transform=ax.transAxes,
-            bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
-    ax.text(0.98, 0.02, f'DISSIPATIVE\n(Low η, p<0.05)', ha='right', va='bottom',
-            fontsize=10, fontweight='bold', color='#FF8C00', transform=ax.transAxes,
-            bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
-    ax.text(0.02, 0.98, 'EFFICIENT\n(High η, Non-geo)', ha='left', va='top',
-            fontsize=10, fontweight='bold', color='#4169E1', transform=ax.transAxes,
-            bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
-    ax.text(0.02, 0.02, 'SUBCRITICAL\n(Low η, Non-geo)', ha='left', va='bottom',
-            fontsize=10, fontweight='bold', color='#808080', transform=ax.transAxes,
-            bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
+    ax.text(0.25, 0.85, 'II', fontsize=48, fontweight='bold',
+            ha='center', va='center', transform=ax.transAxes,
+            color='#4169E1', alpha=0.3)
+    ax.text(0.25, 0.85, f'\n\n{q2} MSAs ({q2/total*100:.1f}%)\nStable\nCoherent', 
+            fontsize=11, ha='center', va='center', transform=ax.transAxes,
+            color='#4169E1', fontweight='bold')
     
-    ax.set_xlabel('Entropy Production (σ)', fontsize=12)
-    ax.set_ylabel('Geodesic Efficiency (η)', fontsize=12)
-    ax.set_title('Figure 3: Classification of MSAs by Entropy Production (σ) and Geodesic Efficiency (η)\n'
-                 f'Full Geodesic Solver Results (N={total} MSAs, {geodesic_pct:.1f}% Geodesic p<0.05)', 
+    ax.text(0.75, 0.15, 'III', fontsize=48, fontweight='bold',
+            ha='center', va='center', transform=ax.transAxes,
+            color='#FF8C00', alpha=0.3)
+    ax.text(0.75, 0.15, f'\n\n{q3} MSAs ({q3/total*100:.1f}%)\nExternally\nForced', 
+            fontsize=11, ha='center', va='center', transform=ax.transAxes,
+            color='#FF8C00', fontweight='bold')
+    
+    ax.text(0.25, 0.15, 'IV', fontsize=48, fontweight='bold',
+            ha='center', va='center', transform=ax.transAxes,
+            color='#808080', alpha=0.3)
+    ax.text(0.25, 0.15, f'\n\n{q4} MSAs ({q4/total*100:.1f}%)\nStagnant\nRegions', 
+            fontsize=11, ha='center', va='center', transform=ax.transAxes,
+            color='#808080', fontweight='bold')
+    
+    # Add axis labels
+    ax.set_xlabel('(σ)', fontsize=14)
+    ax.set_ylabel('(η)', fontsize=14)
+    ax.set_title(f'Geodesic Efficiency (η) v.s. Entropy Production (σ) Quadrants (N={total} MSAs)\n'
+                 'I: Dissipative  II: Stable  III: Forced  IV: Stagnant', 
                  fontsize=13, fontweight='bold')
     
-    # Add statistics
+    # Add statistics box
     stats_text = f'Thresholds: σ = {sigma_threshold}, η = {eta_threshold}\n'
     stats_text += f'Mean η = {merged_df["geodesic_efficiency"].mean():.3f}\n'
-    stats_text += f'Median η = {merged_df["geodesic_efficiency"].median():.3f}\n'
-    stats_text += f'Upper Right: {upper_right/total*100:.1f}%'
+    stats_text += f'Median η = {merged_df["geodesic_efficiency"].median():.3f}'
     
-    ax.text(0.98, 0.55, stats_text, transform=ax.transAxes, fontsize=10,
-            verticalalignment='center', horizontalalignment='right',
+    ax.text(0.98, 0.98, stats_text, transform=ax.transAxes, fontsize=9,
+            verticalalignment='top', horizontalalignment='right',
             bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.7))
     
     ax.set_xlim(0, mean_entropy['mean_entropy_production'].quantile(0.99) * 1.1)
     ax.set_ylim(-0.05, 1.05)
     
     plt.tight_layout()
-    plt.savefig(f'{output_dir}/figure_3_quadrant.pdf', dpi=300, bbox_inches='tight')
-    plt.savefig(f'{output_dir}/figure_3_quadrant.png', dpi=300, bbox_inches='tight')
+    plt.savefig(f'{output_dir}/figure_3b_quadrant_data.pdf', dpi=300, bbox_inches='tight')
+    plt.savefig(f'{output_dir}/figure_3b_quadrant_data.png', dpi=300, bbox_inches='tight')
     plt.close()
-    print(f"Figure 3 saved to {output_dir}/figure_3_quadrant.pdf")
+    print(f"Figure 3B (Data Quadrant Plot) saved to {output_dir}/figure_3b_quadrant_data.pdf")
 
 # ============================================================================
 # FIGURE 4: Recovery Time Boxplots by η Quartile
@@ -315,7 +387,7 @@ def generate_figure_4(merged_df, output_dir):
     
     ax.set_xlabel('Geodesic Efficiency (η) Quartile', fontsize=12)
     ax.set_ylabel('Recovery Time (years)', fontsize=12)
-    ax.set_title('Figure 4: COVID-19 Recovery Time by Geodesic Efficiency (η) Quartile\n'
+    ax.set_title('COVID-19 Recovery Time by Geodesic Efficiency (η) Quartile\n'
                  '(Higher η = More Geodesic = Faster Recovery)', fontsize=13, fontweight='bold')
     
     # Add correlation annotation
@@ -332,56 +404,72 @@ def generate_figure_4(merged_df, output_dir):
     print(f"Figure 4 saved to {output_dir}/figure_4_recovery_boxplots.pdf")
 
 # ============================================================================
-# FIGURE 5: Permutation Entropy vs Complexity
+# FIGURE 5: Complexity by η Quartile (Boxplot)
 # ============================================================================
 def generate_figure_5(merged_df, complexity_df, output_dir):
-    """Generate Figure 5: Permutation entropy vs complexity."""
-    fig, ax = plt.subplots(figsize=(10, 8))
+    """Generate Figure 5: Statistical complexity by geodesic efficiency quartile."""
+    fig, ax = plt.subplots(figsize=(10, 6))
     
     # Merge with complexity data
     plot_df = merged_df.merge(complexity_df, on='msa_code', how='inner')
     
-    # Create scatter with color based on geodesic efficiency
-    scatter = ax.scatter(plot_df['permutation_entropy'], plot_df['complexity'],
-                        c=plot_df['geodesic_efficiency'], cmap='RdYlGn', 
-                        s=80, alpha=0.7, edgecolors='white', linewidth=0.5,
-                        vmin=0, vmax=1)
+    # Create η quartiles
+    plot_df['eta_quartile'] = pd.qcut(plot_df['geodesic_efficiency'], 
+                                       q=4, labels=['Q1\n(Low η)', 'Q2', 'Q3', 'Q4\n(High η)'])
     
-    # Add colorbar
-    cbar = plt.colorbar(scatter, ax=ax)
-    cbar.set_label('Geodesic Efficiency (η)', fontsize=11)
+    # Create boxplot
+    box_data = [plot_df[plot_df['eta_quartile'] == q]['complexity'].values 
+                for q in ['Q1\n(Low η)', 'Q2', 'Q3', 'Q4\n(High η)']]
     
-    ax.set_xlabel('Permutation Entropy (S)', fontsize=12)
-    ax.set_ylabel('Complexity (C)', fontsize=12)
-    ax.set_title('Figure 5: Complexity-Entropy Landscape for U.S. MSAs\n'
-                 'Colored by Geodesic Efficiency (η)', fontsize=13, fontweight='bold')
+    bp = ax.boxplot(box_data, labels=['Q1\n(Low η)', 'Q2', 'Q3', 'Q4\n(High η)'],
+                    patch_artist=True, showmeans=True,
+                    meanprops=dict(marker='D', markerfacecolor='red', markersize=8))
     
-    # Add quadrant lines at medians
-    s_median = plot_df['permutation_entropy'].median()
-    c_median = plot_df['complexity'].median()
-    ax.axhline(c_median, color='black', linestyle='--', alpha=0.5)
-    ax.axvline(s_median, color='black', linestyle='--', alpha=0.5)
+    # Color boxes by quartile
+    colors = ['#FF6B6B', '#FFE66D', '#4ECDC4', '#2E8B57']
+    for patch, color in zip(bp['boxes'], colors):
+        patch.set_facecolor(color)
+        patch.set_alpha(0.6)
     
-    # Add region labels
-    ax.text(0.05, 0.95, 'ORDER\n(Low S, High C)', transform=ax.transAxes, 
-            fontsize=10, va='top', ha='left', fontweight='bold',
-            bbox=dict(boxstyle='round', facecolor='white', alpha=0.7))
-    ax.text(0.95, 0.95, 'CHAOS\n(High S, High C)', transform=ax.transAxes,
-            fontsize=10, va='top', ha='right', fontweight='bold',
-            bbox=dict(boxstyle='round', facecolor='white', alpha=0.7))
-    ax.text(0.05, 0.05, 'STABILITY\n(Low S, Low C)', transform=ax.transAxes,
-            fontsize=10, va='bottom', ha='left', fontweight='bold',
-            bbox=dict(boxstyle='round', facecolor='white', alpha=0.7))
-    ax.text(0.95, 0.05, 'RANDOM\n(High S, Low C)', transform=ax.transAxes,
-            fontsize=10, va='bottom', ha='right', fontweight='bold',
-            bbox=dict(boxstyle='round', facecolor='white', alpha=0.7))
+    # Add statistical annotation
+    from scipy import stats
+    q1_complexity = plot_df[plot_df['eta_quartile'] == 'Q1\n(Low η)']['complexity']
+    q4_complexity = plot_df[plot_df['eta_quartile'] == 'Q4\n(High η)']['complexity']
+    t_stat, p_value = stats.ttest_ind(q1_complexity, q4_complexity)
     
-    # Add correlation annotation
-    corr = np.corrcoef(plot_df['permutation_entropy'], plot_df['complexity'])[0, 1]
-    ax.text(0.98, 0.02, f'N = {len(plot_df)} MSAs\nr = {corr:.3f}', 
-            transform=ax.transAxes, fontsize=10, verticalalignment='bottom', 
-            horizontalalignment='right',
+    # Add significance indicator
+    if p_value < 0.001:
+        sig_text = '***'
+    elif p_value < 0.01:
+        sig_text = '**'
+    elif p_value < 0.05:
+        sig_text = '*'
+    else:
+        sig_text = 'ns'
+    
+    ax.plot([1, 4], [plot_df['complexity'].max() * 1.02] * 2, 'k-', linewidth=1.5)
+    ax.text(2.5, plot_df['complexity'].max() * 1.03, sig_text, 
+            ha='center', va='bottom', fontsize=14, fontweight='bold')
+    
+    ax.set_xlabel('Geodesic Efficiency Quartile', fontsize=12)
+    ax.set_ylabel('Statistical Complexity (C)', fontsize=12)
+    ax.set_title('Statistical Complexity by Geodesic Efficiency Quartile\n'
+                 'Higher η MSAs exhibit greater dynamical complexity', 
+                 fontsize=13, fontweight='bold')
+    
+    # Add sample sizes and means
+    stats_text = ''
+    for i, q in enumerate(['Q1\n(Low η)', 'Q2', 'Q3', 'Q4\n(High η)']):
+        q_data = plot_df[plot_df['eta_quartile'] == q]['complexity']
+        stats_text += f'Q{i+1}: n={len(q_data)}, mean={q_data.mean():.3f}\n'
+    stats_text += f'\nt = {t_stat:.2f}, p = {p_value:.4f}'
+    
+    ax.text(0.98, 0.02, stats_text, transform=ax.transAxes, fontsize=9,
+            verticalalignment='bottom', horizontalalignment='right',
             bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.7))
+    
+    ax.set_ylim(0, plot_df['complexity'].max() * 1.1)
+    ax.grid(axis='y', alpha=0.3)
     
     plt.tight_layout()
     plt.savefig(f'{output_dir}/figure_5_complexity_entropy.pdf', dpi=300, bbox_inches='tight')
@@ -420,8 +508,6 @@ def generate_figure_6(geo_df, output_dir):
                label=f'Mean = {mean_eta:.3f}')
     ax.axvline(median_eta, color='orange', linestyle='--', linewidth=2,
                label=f'Median = {median_eta:.3f}')
-    ax.axvline(0.7, color='green', linestyle=':', linewidth=2,
-               label=f'η = 0.7 threshold ({pct_above_07:.1f}% above)')
     
     # Shade area for geodesic MSAs (based on p < 0.05, not η threshold)
     # Color differently for visual clarity - show the 88.6%
@@ -430,12 +516,11 @@ def generate_figure_6(geo_df, output_dir):
         kde_geo = stats.gaussian_kde(geodesic_eta)
         x_geo = np.linspace(geodesic_eta.min(), geodesic_eta.max(), 200)
         ax.fill_between(x_geo, 0, kde_geo(x_geo), alpha=0.3, color='green', label=f'Geodesic (p<0.05): {pct_geodesic:.1f}%')
-    
+   
     ax.set_xlabel('Geodesic Efficiency (η)', fontsize=12)
     ax.set_ylabel('Density', fontsize=12)
-    ax.set_title('Figure 6: Distribution of Geodesic Efficiency (η)\n'
-                 'Full Geodesic Solver Results (N=386 MSAs)', fontsize=13, fontweight='bold')
-    ax.legend(loc='upper left')
+    ax.set_title('Distribution of Geodesic Efficiency (η) of 386 MSAs', fontsize=13, fontweight='bold')
+    ax.legend(loc='upper right')
     
     # Add statistics box
     stats_text = f'N = {len(eta_values)} MSAs\n'
@@ -444,9 +529,6 @@ def generate_figure_6(geo_df, output_dir):
     stats_text += f'Std Dev = {eta_values.std():.3f}\n'
     stats_text += f'Min = {eta_values.min():.3f}\n'
     stats_text += f'Max = {eta_values.max():.3f}\n\n'
-    stats_text += f'Geodesic (p<0.05): {is_geodesic.sum()} ({pct_geodesic:.1f}%)\n'
-    stats_text += f'Non-Geodesic (p≥0.05): {len(eta_values)-is_geodesic.sum()} ({100-pct_geodesic:.1f}%)\n'
-    stats_text += f'η ≥ 0.7: {pct_above_07:.1f}%'
     
     ax.text(0.02, 0.98, stats_text, transform=ax.transAxes, fontsize=10,
             verticalalignment='top', horizontalalignment='left',
@@ -454,10 +536,10 @@ def generate_figure_6(geo_df, output_dir):
     
     ax.set_xlim(-0.05, 1.05)
     plt.tight_layout()
-    plt.savefig(f'{output_dir}/figure_6_eta_distribution.pdf', dpi=300, bbox_inches='tight')
-    plt.savefig(f'{output_dir}/figure_6_eta_distribution.png', dpi=300, bbox_inches='tight')
+    plt.savefig(f'{output_dir}/geodesic_efficiency_distribution.pdf', dpi=300, bbox_inches='tight')
+    plt.savefig(f'{output_dir}/geodesic_efficiency_distribution.png', dpi=300, bbox_inches='tight')
     plt.close()
-    print(f"Figure 6 saved to {output_dir}/figure_6_eta_distribution.pdf")
+    print(f"Distribution of Geodesic Efficiency saved to {output_dir}/geodesic_efficiency_distribution.pdf")
 
 # ============================================================================
 # MAIN
@@ -522,7 +604,8 @@ def main():
     print("="*70)
     
     generate_figure_2(mean_entropy, OUTPUT_DIR)
-    generate_figure_3(merged_df, mean_entropy, geo_df, OUTPUT_DIR)
+    generate_figure_3a_conceptual(OUTPUT_DIR)
+    generate_figure_3b_data(merged_df, mean_entropy, geo_df, OUTPUT_DIR)
     generate_figure_4(merged_df, OUTPUT_DIR)
     generate_figure_5(merged_df, complexity_df, OUTPUT_DIR)
     generate_figure_6(geo_df, OUTPUT_DIR)
@@ -532,11 +615,12 @@ def main():
     print("="*70)
     print(f"\nOutput location: {OUTPUT_DIR}")
     print("\nFiles generated:")
-    print("  - figure_2_entropy_production.pdf")
-    print("  - figure_3_quadrant.pdf")
+    print("  - Distribution_of_entropy_production.pdf")
+    print("  - figure_3a_conceptual_quadrant.pdf")
+    print("  - figure_3b_quadrant_data.pdf")
     print("  - figure_4_recovery_boxplots.pdf")
     print("  - figure_5_complexity_entropy.pdf")
-    print("  - figure_6_eta_distribution.pdf")
+    print("  - geodesic_efficiency_distribution.pdf")
 
 if __name__ == '__main__':
     main()
